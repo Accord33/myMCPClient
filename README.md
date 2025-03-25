@@ -22,7 +22,7 @@ Electronを使用したデスクトップAIチャットアプリケーション�
 1. リポジトリをクローン
 ```bash
 git clone <repository-url>
-cd llm2
+cd myMCPClient
 ```
 
 2. フロントエンドの依存関係をインストール
