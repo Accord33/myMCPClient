@@ -368,3 +368,4 @@ pymcpservers/*
 backend/mcp_servers.json
 
 .vscode
+nohup.out
