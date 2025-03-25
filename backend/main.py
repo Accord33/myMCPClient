@@ -27,6 +27,19 @@ from langchain.schema import SystemMessage, HumanMessage, AIMessage
 # MCPサーバー設定を格納するグローバル変数
 mcp_servers_config = {}
 
+# アプリケーションのルートパスを取得する関数
+def get_app_root():
+    # 実行ファイルのパスを取得
+    if getattr(sys, 'frozen', False):
+        # PyInstallerでパッケージングされている場合
+        app_root = os.path.dirname(sys.executable)
+        # Electronリソースフォルダ内の場合
+        if os.path.basename(os.path.dirname(app_root)) == 'Resources':
+            return os.path.dirname(os.path.dirname(os.path.dirname(app_root)))
+    
+    # 通常の実行の場合
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # MCPサーバー設定をJSONファイルから読み込む関数
 def load_mcp_servers_config():
     config_path = os.path.join(os.path.dirname(__file__), "mcp_servers.json")
@@ -38,7 +51,9 @@ def load_mcp_servers_config():
         return {}
 
 # バックエンドディレクトリに基づいて.envファイルを読み込む
-dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"))
+app_root = get_app_root()
+env_path = os.path.join(app_root, ".env")
+dotenv.load_dotenv(env_path)
 
 # データベースの初期設定
 DB_PATH = os.path.join(os.path.dirname(__file__), "chat_history.db")
@@ -186,8 +201,9 @@ async def stream_agent_response(query: str, session_id: int):
     ]
 
     conversation_messages = []
-    with open(os.path.join(os.path.dirname(__file__), "system_prompt.txt"), "r") as f:
-            conversation_messages.append(SystemMessage(content=f.read()))
+    system_prompt_path = os.path.join(os.path.dirname(__file__), "system_prompt.txt")
+    with open(system_prompt_path, "r") as f:
+        conversation_messages.append(SystemMessage(content=f.read()))
     for msg in conversation_history:
         role = msg["role"]
         content = msg["content"]

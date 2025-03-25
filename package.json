@@ -6,16 +6,60 @@
   "scripts": {
     "start": "electron .",
     "backend": "cd backend && python main.py api",
-    "dev": "concurrently \"npm run backend\" \"npm run start\""
+    "dev": "concurrently \"npm run backend\" \"npm run start\"",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "electron": "^28.1.0"
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
   },
   "dependencies": {
     "electron-fetch": "^1.9.1",
     "marked": "^9.1.5"
+  },
+  "build": {
+    "appId": "com.sakabekazuto.aimcpclient",
+    "productName": "AI Chat Assistant",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "darkModeSupport": true,
+      "icon": "build/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "extraResources": [
+        {
+          "from": "backend",
+          "to": "backend"
+        },
+        {
+          "from": "pymcpservers",
+          "to": "pymcpservers"
+        }
+      ]
+    },
+    "extraMetadata": {
+      "main": "frontend/main.js"
+    },
+    "files": [
+      "frontend/**/*",
+      "!**/.env",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*/.bin"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "asarUnpack": [
+      "backend",
+      "pymcpservers"
+    ]
   }
 }

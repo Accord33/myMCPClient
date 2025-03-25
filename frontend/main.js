@@ -14,19 +14,41 @@ const SERVER_STARTUP_WAIT = 3000;
 // メインウィンドウの参照を保持（GC対策）
 let mainWindow = null;
 
+// 実行可能ファイルのパスを取得（開発/本番環境で異なる）
+function getAppPath() {
+  const isPackaged = app.isPackaged;
+  let basePath;
+
+  if (isPackaged) {
+    // 本番環境: リソースパスを使用
+    basePath = path.join(process.resourcesPath);
+  } else {
+    // 開発環境: 現在のディレクトリ
+    basePath = path.join(__dirname, '..');
+  }
+
+  return basePath;
+}
+
 // バックエンドサーバーの起動
 function startBackendServer() {
   return new Promise((resolve, reject) => {
-    // Pythonの実行パスを取得
-    const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+    // アプリのパスを取得
+    const appPath = getAppPath();
     
     // バックエンドのパス
-    const backendPath = path.join(__dirname, '../backend/main.py');
+    const backendPath = path.join(appPath, 'backend/main.py');
     
     console.log(`バックエンドサーバーを起動: ${backendPath}`);
     
+    // 実行コマンドを環境に応じて変更
+    let command = app.isPackaged ? 'python3' : 'uv';
+    let args = app.isPackaged 
+      ? [backendPath, 'api'] 
+      : ['run', 'python', backendPath, 'api'];
+    
     // バックエンドプロセスを起動
-    backendProcess = spawn("uv", ["run", "python", backendPath, "api"], {
+    backendProcess = spawn(command, args, {
       stdio: 'pipe'
     });
     
@@ -97,6 +119,27 @@ function createWindow() {
 // アプリケーションの初期化処理
 app.whenReady().then(async () => {
   try {
+    // .envファイルの存在確認と必要な設定
+    const appPath = getAppPath();
+    const envPath = path.join(appPath, '.env');
+    
+    // 本番環境でAPIキーが設定されていない場合の処理
+    if (app.isPackaged && !process.env.ANTHROPIC_API_KEY) {
+      if (!fs.existsSync(envPath)) {
+        // アクセストークン入力ダイアログを表示
+        const { response } = await dialog.showMessageBox({
+          type: 'question',
+          buttons: ['OK'],
+          title: 'APIキーの設定',
+          message: 'Anthropic APIキーが必要です',
+          detail: 'アプリを使用するにはAnthropicのAPIキーが必要です。\n.envファイルを作成して設定してください。'
+        });
+        
+        app.quit();
+        return;
+      }
+    }
+    
     // バックエンドサーバーの起動
     await startBackendServer();
     // メインウィンドウの作成
