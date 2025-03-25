@@ -1,0 +1,21 @@
+{
+  "name": "llm2-electron",
+  "version": "1.0.0",
+  "description": "AI Assistant Desktop Application",
+  "main": "frontend/main.js",
+  "scripts": {
+    "start": "electron .",
+    "backend": "cd backend && python main.py api",
+    "dev": "concurrently \"npm run backend\" \"npm run start\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^28.1.0"
+  },
+  "dependencies": {
+    "electron-fetch": "^1.9.1",
+    "marked": "^9.1.5"
+  }
+}

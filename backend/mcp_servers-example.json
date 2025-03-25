@@ -1,0 +1,7 @@
+{
+  "weather": {
+    "command": "python",
+    "args": ["/Users/username/pymcpservers/weather.py"],
+    "transport": "stdio"
+  }
+}
