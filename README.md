@@ -10,6 +10,8 @@ Electronを使用したデスクトップAIチャットアプリケーション�
 - バックエンドはLangChainを使用
 - Claude 3.5 Sonnetモデルを利用
 
+![window.png](window.png)
+
 ## 開発環境のセットアップ
 
 ### 前提条件
