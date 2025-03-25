@@ -214,7 +214,7 @@ async def stream_agent_response(query: str, session_id: int):
                     yield f"data: {chunk}\n\n"
                 elif len(mess) > 0 and mess[0]["type"] == "tool_use":
                     tool_str = mess[0].__str__() + "\n"
-                    ai_response += tool_str
+                    # ai_response += tool_str
                     # yield f"data: {tool_str}\n\n"
 
     # 完全な応答をDBに保存

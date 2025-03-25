@@ -363,7 +363,8 @@ pip-selfcheck.json
 node_modules
 
 backend/chat_history.db
-pymcpservers/file_finder.py
+pymcpservers/*
+!pymcpservers/weather.py
 backend/mcp_servers.json
 
 .vscode
