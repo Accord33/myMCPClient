@@ -15,6 +15,7 @@ import pathlib
 import json
 import logging
 import time  # 追加: ミドルウェア用
+import copy
 
 from mcp.client.stdio import stdio_client
 from langchain_mcp_adapters.tools import load_mcp_tools
@@ -54,7 +55,11 @@ class MCPServers():
             self.mcp_servers_config = {}
             
     def get_tools(self) -> dict:
-        return {i: self.mcp_servers_config[i] for i in self.mcp_servers_config.keys() if self.mcp_servers_config[i]["use"]}
+        tools = copy.deepcopy({i: self.mcp_servers_config[i] for i in self.mcp_servers_config.keys() if self.mcp_servers_config[i]["use"]})
+        for i in tools.keys():
+            del tools[i]["use"]
+            
+        return tools
         
     def get_tools_name(self) -> dict:
         return {i: self.mcp_servers_config[i]["use"] for i in self.mcp_servers_config.keys()}

@@ -196,6 +196,155 @@ body {
     background-color: #0eaa68;
 }
 
+/* ツールボタンのスタイル */
+#tools-button {
+    margin-left: 10px;
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #4d4d5e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+}
+
+#tools-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+#tools-button:hover {
+    background-color: #5d5d6e;
+}
+
+#tools-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #19c37d;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ツールポップアップのスタイル */
+.tools-popup {
+    position: absolute;
+    bottom: 80px;
+    right: 15px;
+    width: 320px;
+    background-color: #2d2d39;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+}
+
+.tools-popup.active {
+    display: block;
+}
+
+.tools-popup-header {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tools-popup-header h3 {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+#close-tools-popup {
+    background: none;
+    border: none;
+    color: #d1d5db;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.tools-popup-content {
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#tools-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tool-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.tool-name {
+    font-size: 14px;
+}
+
+/* トグルスイッチのスタイル */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #555666;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #19c37d;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
 .typing-indicator {
     display: flex;
     padding: 8px 15px;
@@ -288,5 +437,11 @@ code {
     
     .session-list-container {
         display: none;
+    }
+
+    .tools-popup {
+        width: 90%;
+        left: 5%;
+        right: 5%;
     }
 }
