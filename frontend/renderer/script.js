@@ -5,6 +5,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const newSessionButton = document.getElementById('new-session-button');
     const sessionList = document.getElementById('session-list');
     
+    // サイドバー開閉機能のための要素
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const appContainer = document.querySelector('.app-container');
+    
+    // サイドバー開閉機能
+    sidebarToggle.addEventListener('click', function() {
+        appContainer.classList.toggle('sidebar-collapsed');
+        
+        // 設定をローカルストレージに保存
+        const isSidebarCollapsed = appContainer.classList.contains('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
+    });
+    
+    // ページロード時に保存された状態を復元
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true') {
+        appContainer.classList.add('sidebar-collapsed');
+    }
+    
     let currentSessionId = null; // 初期値はnull
     let sessions = [];
     

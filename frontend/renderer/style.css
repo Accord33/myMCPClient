@@ -18,6 +18,11 @@ body {
     width: 100%;
     height: 100vh;
     display: flex;
+    transition: all 0.3s ease;
+}
+
+.app-container.sidebar-collapsed .sidebar {
+    margin-left: -260px; /* サイドバーの幅と同じだけ左に移動 */
 }
 
 /* サイドバースタイル */
@@ -28,6 +33,7 @@ body {
     flex-direction: column;
     overflow-y: auto;
     padding: 10px;
+    transition: margin-left 0.3s ease;
 }
 
 #new-session-button {
@@ -86,6 +92,24 @@ body {
     background-color: #343541;
 }
 
+/* サイドバートグルボタンのスタイル */
+.sidebar-toggle-button {
+    background: none;
+    border: none;
+    color: #ececf1;
+    cursor: pointer;
+    padding: 5px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-toggle-button:hover {
+    background-color: #40414f;
+    border-radius: 4px;
+}
+
 /* メインチャットエリアスタイル */
 .chat-container {
     flex: 1;
@@ -99,6 +123,9 @@ body {
     padding: 15px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chat-header h1 {
