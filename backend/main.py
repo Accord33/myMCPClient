@@ -1,5 +1,5 @@
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -27,22 +27,45 @@ from langchain.schema import SystemMessage, HumanMessage, AIMessage
 # MCPサーバー設定を格納するグローバル変数
 mcp_servers_config = {}
 
-# MCPサーバー設定をJSONファイルから読み込む関数
-def load_mcp_servers_config():
-    config_path = os.path.join(os.path.dirname(__file__), "mcp_servers.json")
-    try:
-        with open(config_path, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        # デフォルト設定を返す
-        return {}
 
 # バックエンドディレクトリに基づいて.envファイルを読み込む
 dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"))
-
 # データベースの初期設定
 DB_PATH = os.path.join(os.path.dirname(__file__), "chat_history.db")
+app = FastAPI()
 
+
+
+# MCPサーバー設定をJSONファイルから読み込み管理するクラス
+
+class MCPServers():
+    def __init__(self):
+        self.mcp_servers_config = {}
+        
+        config_path = os.path.join(os.path.dirname(__file__), "mcp_servers.json")
+        try:
+            with open(config_path, 'r') as f:
+                self.mcp_servers_config = json.load(f)
+                for server_name in self.mcp_servers_config:
+                    self.mcp_servers_config[server_name]["use"] = True
+                
+        except FileNotFoundError:
+            # デフォルト設定を返す
+            self.mcp_servers_config = {}
+            
+    def get_tools(self) -> dict:
+        return {i: self.mcp_servers_config[i] for i in self.mcp_servers_config.keys() if self.mcp_servers_config[i]["use"]}
+        
+    def get_tools_name(self) -> dict:
+        return {i: self.mcp_servers_config[i]["use"] for i in self.mcp_servers_config.keys()}
+    
+    def set_tool_use(self, tool_name: str, use: bool) -> bool:
+        if tool_name in self.mcp_servers_config:
+            self.mcp_servers_config[tool_name]["use"] = use
+            return True
+        else:
+            return False
+        
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -76,8 +99,6 @@ def init_db():
     conn.close()
 
 
-# データベース初期化
-init_db()
 
 # ログの設定
 logging.basicConfig(
@@ -89,7 +110,6 @@ logging.basicConfig(
     ]
 )
 
-app = FastAPI()
 
 # リクエストとエラーのログ記録用ミドルウェアを追加
 @app.middleware("http")
@@ -113,10 +133,6 @@ app.add_middleware(
     allow_methods=["*"],  # すべてのメソッドを許可
     allow_headers=["*"],  # すべてのヘッダーを許可
 )
-
-model = ChatAnthropic(model="claude-3-5-sonnet-20241022")
-client = None
-
 
 class QueryRequest(BaseModel):
     query: str
@@ -202,7 +218,7 @@ async def stream_agent_response(query: str, session_id: int):
     ai_response = ""
 
     # JSONから読み込んだMCPサーバー設定を使用
-    async with MultiServerMCPClient(mcp_servers_config) as client:
+    async with MultiServerMCPClient(mcp_servers_config.get_tools()) as client:
         agent = create_react_agent(model, client.get_tools())
         # 会話履歴を指定
         async for event in agent.astream_events({"messages": conversation_messages}):
@@ -244,16 +260,35 @@ async def query_agent(request: QueryRequest):
     )
 
 
+# ツール情報を取得するエンドポイント
+@app.get("/tools")
+async def get_tools():
+    return {"tools": mcp_servers_config.get_tools_name()}
+
+# ツールの使用状態を更新するエンドポイント
+@app.post("/tools/{tool_name}")
+async def update_tool(tool_name: str, use: bool = Query(...)):
+    success = mcp_servers_config.set_tool_use(tool_name, use)
+    if not success:
+        return {"status": "error", "message": f"Tool {tool_name} not found"}
+    return {"status": "success", "tool": tool_name, "use": use}
+
+
 # ヘルスチェック用のエンドポイント（Electronからの接続確認用）
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
 
 # アプリケーション起動時にMCPサーバー設定を読み込む
-mcp_servers_config = load_mcp_servers_config()
+mcp_servers_config = MCPServers()
 
 if __name__ == "__main__":
     port = 8000
+    # データベース初期化
+    init_db()
+    model = ChatAnthropic(model="claude-3-5-sonnet-20241022")
+    print(mcp_servers_config.get_tools())
+        
     # コマンドライン引数からポートを取得（オプション）
     if len(sys.argv) > 2 and sys.argv[1] == "api" and sys.argv[2].isdigit():
         port = int(sys.argv[2])
