@@ -20,26 +20,41 @@ import copy
 from mcp.client.stdio import stdio_client
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.prebuilt import create_react_agent
-from langchain_anthropic import ChatAnthropic
 import dotenv
 import asyncio
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
-# MCPサーバー設定を格納するグローバル変数
-mcp_servers_config = {}
 
-
-# バックエンドディレクトリに基づいて.envファイルを読み込む
-dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"))
-# データベースの初期設定
-DB_PATH = os.path.join(os.path.dirname(__file__), "chat_history.db")
 app = FastAPI()
 
-
+# LLMのモデルを管理するクラス
+class LLMModel:
+    def __init__(self):
+        self.model = None
+        self.models = {
+            "claude3.5 sonnet": {"lib_name":"claude", "model_name":"claude-3-5-sonnet-20241022"},
+        }
+        if self.set_model("claude3.5 sonnet"):
+            logging.info(f"モデルを{self.get_model()}に設定しました")
+        else:
+            logging.error("モデルの設定に失敗しました")
+        
+    def get_model(self) -> object:
+        return self.model
+    
+    def get_all_models(self) -> dict:
+        return self.models
+    
+    def set_model(self, model_name: str) -> bool:
+        if self.models.get(model_name).get("lib_name") == "claude":
+            from langchain_anthropic import ChatAnthropic
+            self.model = ChatAnthropic(model=self.models.get(model_name).get("model_name"))
+            return True
+        else:
+            return False
 
 # MCPサーバー設定をJSONファイルから読み込み管理するクラス
-
-class MCPServers():
+class MCPServers:
     def __init__(self):
         self.mcp_servers_config = {}
         
@@ -224,7 +239,7 @@ async def stream_agent_response(query: str, session_id: int):
 
     # JSONから読み込んだMCPサーバー設定を使用
     async with MultiServerMCPClient(mcp_servers_config.get_tools()) as client:
-        agent = create_react_agent(model, client.get_tools())
+        agent = create_react_agent(model.get_model(), client.get_tools())
         # 会話履歴を指定
         async for event in agent.astream_events({"messages": conversation_messages}):
             if event["event"] == "on_chat_model_stream":
@@ -278,11 +293,27 @@ async def update_tool(tool_name: str, use: bool = Query(...)):
         return {"status": "error", "message": f"Tool {tool_name} not found"}
     return {"status": "success", "tool": tool_name, "use": use}
 
+@app.get("/models")
+async def get_models():
+    return {"models": model.get_all_models()}
+
+@app.get("/using_model")
+async def get_using_model():
+    return {"model": model.get_model()}
 
 # ヘルスチェック用のエンドポイント（Electronからの接続確認用）
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+
+# MCPサーバー設定を格納するグローバル変数
+mcp_servers_config = {}
+
+# バックエンドディレクトリに基づいて.envファイルを読み込む
+dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"))
+# データベースの初期設定
+DB_PATH = os.path.join(os.path.dirname(__file__), "chat_history.db")
 
 # アプリケーション起動時にMCPサーバー設定を読み込む
 mcp_servers_config = MCPServers()
@@ -291,8 +322,7 @@ if __name__ == "__main__":
     port = 8000
     # データベース初期化
     init_db()
-    model = ChatAnthropic(model="claude-3-5-sonnet-20241022")
-    print(mcp_servers_config.get_tools())
+    model = LLMModel()
         
     # コマンドライン引数からポートを取得（オプション）
     if len(sys.argv) > 2 and sys.argv[1] == "api" and sys.argv[2].isdigit():
