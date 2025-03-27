@@ -31,24 +31,28 @@ app = FastAPI()
 class LLMModel:
     def __init__(self):
         self.model = None
+        self.using_model_name = None
         self.models = {
             "claude3.5 sonnet": {"lib_name":"claude", "model_name":"claude-3-5-sonnet-20241022"},
+            "claude3.7 sonnet": {"lib_name":"claude", "model_name":"claude-3-5-sonnet-20241022"},
         }
         if self.set_model("claude3.5 sonnet"):
             logging.info(f"モデルを{self.get_model()}に設定しました")
         else:
             logging.error("モデルの設定に失敗しました")
         
-    def get_model(self) -> object:
-        return self.model
+    def get_model(self) -> str:
+        return self.using_model_name
     
     def get_all_models(self) -> dict:
         return self.models
     
     def set_model(self, model_name: str) -> bool:
-        if self.models.get(model_name).get("lib_name") == "claude":
+        print(model_name)
+        if self.models.get(model_name)["lib_name"] == "claude":
             from langchain_anthropic import ChatAnthropic
             self.model = ChatAnthropic(model=self.models.get(model_name).get("model_name"))
+            self.using_model_name = model_name
             return True
         else:
             return False
@@ -63,7 +67,7 @@ class MCPServers:
             with open(config_path, 'r') as f:
                 self.mcp_servers_config = json.load(f)
                 for server_name in self.mcp_servers_config:
-                    self.mcp_servers_config[server_name]["use"] = True
+                    self.mcp_servers_config[server_name]["use"] = False
                 
         except FileNotFoundError:
             # デフォルト設定を返す
@@ -299,7 +303,15 @@ async def get_models():
 
 @app.get("/using_model")
 async def get_using_model():
-    return {"model": model.get_model()}
+    return {"model_name": model.get_model()}
+
+@app.post("/set_model")
+async def set_model(model_name: str):
+    success = model.set_model(model_name)
+    if not success:
+        return {"status": "error", "message": f"Model {model_name} not found"}
+    return {"status": "success", "model": model_name}
+
 
 # ヘルスチェック用のエンドポイント（Electronからの接続確認用）
 @app.get("/health")

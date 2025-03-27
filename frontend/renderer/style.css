@@ -104,6 +104,58 @@ body {
 .chat-header h1 {
     font-size: 20px;
     font-weight: 500;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.chat-header h1:hover {
+    background-color: #40414f;
+}
+
+.model-dropdown {
+    position: relative;
+    display: none;
+}
+
+.model-dropdown.active {
+    display: block;
+}
+
+.models-list {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #2d2d39;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.model-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.model-item:last-child {
+    border-bottom: none;
+}
+
+.model-item:hover {
+    background-color: #40414f;
+}
+
+.model-item.active {
+    background-color: #2b2b36;
+    color: #19c37d;
 }
 
 .chat-history {

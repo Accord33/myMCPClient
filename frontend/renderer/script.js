@@ -361,4 +361,18 @@ document.addEventListener('DOMContentLoaded', function() {
         chatHistory.appendChild(messageContainer);
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
+
+    fetchCurrentModel();
 });
+
+async function fetchCurrentModel() {
+    try {
+        const data = await window.electronAPI.apiRequest('GET', '/using_model');
+        const modelTitle = document.getElementById('model-title');
+        if (modelTitle) {
+            modelTitle.textContent = data.model_name;
+        }
+    } catch (error) {
+        console.error('モデル名取得エラー:', error);
+    }
+}
