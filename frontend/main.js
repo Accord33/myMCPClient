@@ -82,7 +82,8 @@ function createWindow() {
 
   // レンダラープロセスのHTMLを読み込む
   mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
-  mainWindow.webContents.openDevTools({ mode: 'detach' });
+  // デバッグ用
+  // mainWindow.webContents.openDevTools({ mode: 'detach' });
 
   // 開発ツールを開く（開発時のみ）
   if (process.env.NODE_ENV === 'development') {
