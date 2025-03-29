@@ -2,12 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatHistory = document.getElementById('chat-history');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
-    const newSessionButton = document.getElementById('new-session-button');
     const sessionList = document.getElementById('session-list');
-    const toolsButton = document.getElementById('tools-button');
     const toolsCount = document.getElementById('tools-count');
-    const toolsPopup = document.getElementById('tools-popup');
-    const closeToolsPopupButton = document.getElementById('close-tools-popup');
     const toolsList = document.getElementById('tools-list');
     
     let currentSessionId = null; // 初期値はnull
@@ -16,21 +12,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初期化時にツール情報を取得
     fetchToolsInfo();
+
+    // セッション一覧を取得
+    fetchSessionList();
     
-    // ツールボタンクリック時の処理
-    toolsButton.addEventListener('click', () => {
-        toolsPopup.classList.toggle('active');
-    });
-    
-    // ポップアップの閉じるボタンクリック時の処理
-    closeToolsPopupButton.addEventListener('click', () => {
-        toolsPopup.classList.remove('active');
-    });
-    
-    // ポップアップ外クリックで閉じる
-    document.addEventListener('click', (event) => {
-        if (!toolsPopup.contains(event.target) && event.target !== toolsButton) {
-            toolsPopup.classList.remove('active');
+    // メッセージ送信処理
+    sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
         }
     });
     
@@ -124,33 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updateToolsList();
         }
     }
-    
-    // 自動で新しいセッションを作成しないように初期化時は変更なし
-    
-    // セッション一覧を取得
-    fetchSessionList();
-    
-    // 「+ 新しいチャット」ボタン押下時はセッションをリセットするだけ
-    newSessionButton.addEventListener('click', () => {
-        currentSessionId = null;
-        chatHistory.innerHTML = '';
-        console.log("セッションリセット: 入力があった時に新しい会話が作成されます。");
-    });
-    
-    // メッセージ送信処理
-    sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    // ユーザー入力が変更されたときにテキストエリアの高さを自動調整
-    userInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight < 200) ? (this.scrollHeight + 'px') : '200px';
-    });
     
     // 新しいセッションを作成する関数
     async function createNewSession() {
