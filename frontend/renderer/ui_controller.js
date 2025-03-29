@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    let currentSessionId = null;
     const chatHistory = document.getElementById('chat-history');
     const userInput = document.getElementById('user-input');
     const newSessionButton = document.getElementById('new-session-button');
