@@ -42,6 +42,9 @@ class LLMModel:
             logging.error("モデルの設定に失敗しました")
         
     def get_model(self) -> str:
+        return self.model
+    
+    def get_model_name(self) -> str:
         return self.using_model_name
     
     def get_all_models(self) -> dict:
@@ -303,7 +306,7 @@ async def get_models():
 
 @app.get("/using_model")
 async def get_using_model():
-    return {"model_name": model.get_model()}
+    return {"model_name": model.get_model_name()}
 
 @app.post("/set_model")
 async def set_model(model_name: str):
